@@ -13,4 +13,3 @@ venv/
 
 # Auth tokens and credentials
 auth/*.json
-.cache
