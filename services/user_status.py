@@ -1,18 +1,5 @@
-import json
-import os
+from auth.token_manager import load_tokens
 from sheets.sheets_client import update_sheet_row
-
-TOKENS_FILE = "auth/tokens.json"
-
-def load_tokens() -> dict:
-    """Loads tokens from disk."""
-    if not os.path.exists(TOKENS_FILE):
-        return {}
-    with open(TOKENS_FILE, "r", encoding="utf-8") as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return {}
 
 def sync_users_to_sheet():
     """
