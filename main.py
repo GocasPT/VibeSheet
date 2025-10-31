@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from auth.spotify_oauth import router as spotify_router
 from services.user_status import sync_users_to_sheet
 from sheets.spotify_sync import sync_spotify_to_sheets
+from utils.scheduler import start_scheduler
 
 
 app = FastAPI(
@@ -12,6 +13,10 @@ app = FastAPI(
 
 app.include_router(spotify_router, prefix="/spotify")
 app.include_router(spotify_router)
+
+@app.on_event("startup")
+def startup_event():
+    start_scheduler()
 
 @app.get("/health", tags=["system"])
 def health_check():
