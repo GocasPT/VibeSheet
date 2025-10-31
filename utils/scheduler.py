@@ -3,7 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from dotenv import load_dotenv
 
-from sheets.spotify_sync import sync_spotify_to_sheets
+from services.spotify_sync import sync_spotify_to_sheets
 
 load_dotenv()
 
