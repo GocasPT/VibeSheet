@@ -3,7 +3,15 @@ from auth.spotify_oauth import router as spotify_router
 from services.user_status import sync_users_to_sheet
 from services.spotify_sync import sync_spotify_to_sheets
 from utils.scheduler import start_scheduler
+import logging
 
+logging.basicConfig(
+    level=logging.DEBUG,  # Changed from INFO to DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="VibeSheet API",

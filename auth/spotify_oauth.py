@@ -1,15 +1,23 @@
 import os
-import json
 from fastapi.responses import RedirectResponse
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
 from fastapi import APIRouter, Request
 from dotenv import load_dotenv
+import logging
 
 from auth.token_manager import load_tokens, save_tokens
 
+logging.basicConfig(
+    level=logging.DEBUG,  # Changed from INFO to DEBUG
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
 load_dotenv()
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -38,10 +46,14 @@ async def callback(request: Request):
     code = request.query_params.get("code")
     if not code:
         return {"error": "Missing authorization code."}, 400
+    
+    logger.debug("OAuth code recebido: %s", code)
 
     try:
         token_info = get_spotify_oauth().get_access_token(code)
+        logger.debug("Token info: %s", token_info)
     except Exception as exc:
+        logger.error("Erro ao trocar code por token: %s", exc)
         return {"error": f"Failed to get access token: {str(exc)}"}, 400
 
     if not token_info or "access_token" not in token_info:
@@ -50,16 +62,22 @@ async def callback(request: Request):
     sp = Spotify(auth=token_info["access_token"])
     try:
         user = sp.current_user()
+        logger.debug("Dados do usuário: %s", user)
     except Exception as exc:
+        logger.error("Falha ao buscar usuário: %s", exc)
         return {"error": f"Failed to fetch current user: {str(exc)}"}, 500
 
     if not user:
+        logger.error("Usuário retornado é None")
         return {"error": "Could not retrieve user information."}, 500
 
-    username = user.get("display_name") or user.get("id") or "unknown"
+    user_id = user.get("id")
+    display_name  = user.get("display_name") or user_id
+
+    logger.info("Usuário autenticado: %s (%s)", display_name, user_id)
 
     data = load_tokens()
-    data[username] = token_info
+    data[display_name] = token_info
     save_tokens(data)
 
-    return {"status": "ok", "user": username}, 200
+    return {"status": "ok", "user": display_name }, 200
