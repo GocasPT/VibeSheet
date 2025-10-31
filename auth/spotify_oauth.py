@@ -6,6 +6,8 @@ from spotipy import Spotify
 from fastapi import APIRouter, Request
 from dotenv import load_dotenv
 
+from auth.token_manager import load_tokens, save_tokens
+
 load_dotenv()
 router = APIRouter()
 
@@ -31,22 +33,20 @@ async def login():
 async def callback(request: Request):
     code = request.query_params.get("code")
     token_info = get_spotify_oauth().get_access_token(code)
-    with open("auth/tokens.json", "r+") as f:
-        try:
-            data = json.load(f)
-        except:
-            data = {}
+    
+    data = load_tokens()
 
-        sp = Spotify(auth=token_info["access_token"])
-        if sp is None:
-            return {"error": "Failed to authenticate with Spotify."}
+    sp = Spotify(auth=token_info["access_token"])
+    if sp is None:
+        return {"error": "Failed to authenticate with Spotify."}
 
-        user = sp.current_user()
-        if not user:
-            return {"error": "Failed to fetch current user."}
+    user = sp.current_user()
+    if not user:
+        return {"error": "Failed to fetch current user."}
 
-        username = user.get("display_name") or user.get("id") or "unknown"
-        data[username] = token_info
-        f.seek(0)
-        json.dump(data, f, indent=2)
+    username = user.get("display_name") or user.get("id") or "unknown"
+    data[username] = token_info
+
+    save_tokens(data)
+
     return {"status": "ok", "user": username}
