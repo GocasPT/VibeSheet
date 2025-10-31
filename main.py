@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from auth.spotify_oauth import router as spotify_router
 
 app = FastAPI(
     title="VibeSheet API",
@@ -6,6 +7,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(spotify_router, prefix="/spotify")
 
 @app.get("/health", tags=["system"])
 def health_check():
