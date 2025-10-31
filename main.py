@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from auth.spotify_oauth import router as spotify_router
 from services.user_status import sync_users_to_sheet
+from sheets.spotify_sync import sync_spotify_to_sheets
 
 
 app = FastAPI(
@@ -19,10 +20,13 @@ def health_check():
     """
     return {"status": "ok", "message": "VibeSheet API running"}
 
-@app.post("/sync", tags=["sheets"])
-def sync_sheet():
-    """
-    Force manual sync of authenticated users to Google Sheets.
-    """
+@app.post("/sync/users", tags=["sheets"])
+def sync_sheet_users():
     sync_users_to_sheet()
-    return {"status": "ok", "message": "Google Sheet updated"}
+    return {"status": "ok", "message": "Google Sheet updated with users"}
+
+
+@app.post("/sync/tracks", tags=["spotify"])
+def sync_tracks():
+    sync_spotify_to_sheets()
+    return {"status": "ok", "message": "Google Sheet updated with Spotify data"}
