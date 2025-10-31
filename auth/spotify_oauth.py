@@ -31,22 +31,35 @@ async def login():
 
 @router.get("/callback")
 async def callback(request: Request):
+    """
+    Endpoint que recebe o `code` do Spotify, troca por tokens, salva o
+    token associado ao usuário e devolve uma resposta JSON.
+    """
     code = request.query_params.get("code")
-    token_info = get_spotify_oauth().get_access_token(code)
-    
-    data = load_tokens()
+    if not code:
+        return {"error": "Missing authorization code."}, 400
+
+    try:
+        token_info = get_spotify_oauth().get_access_token(code)
+    except Exception as exc:
+        return {"error": f"Failed to get access token: {str(exc)}"}, 400
+
+    if not token_info or "access_token" not in token_info:
+        return {"error": "Token information incomplete."}, 500
 
     sp = Spotify(auth=token_info["access_token"])
-    if sp is None:
-        return {"error": "Failed to authenticate with Spotify."}
+    try:
+        user = sp.current_user()
+    except Exception as exc:
+        return {"error": f"Failed to fetch current user: {str(exc)}"}, 500
 
-    user = sp.current_user()
     if not user:
-        return {"error": "Failed to fetch current user."}
+        return {"error": "Could not retrieve user information."}, 500
 
     username = user.get("display_name") or user.get("id") or "unknown"
-    data[username] = token_info
 
+    data = load_tokens()
+    data[username] = token_info
     save_tokens(data)
 
-    return {"status": "ok", "user": username}
+    return {"status": "ok", "user": username}, 200
