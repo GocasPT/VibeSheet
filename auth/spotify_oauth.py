@@ -20,7 +20,7 @@ def get_spotify_oauth():
         client_id=CLIENT_ID,
         client_secret=CLIENT_SECRET,
         redirect_uri=REDIRECT_URI,
-        scope="user-read-currently-playing",
+        scope="user-read-private,user-read-email",
         cache_path=None,
     )
 
