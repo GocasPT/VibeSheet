@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Env
+.env
+venv/
+.envrc
+
+# IDE
+.vscode/
+.idea/
+
+# Auth tokens and credentials
+auth/tokens.json
+credentials.json
