@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy import Spotify
 from fastapi import APIRouter, Request
+from fastapi.logger import logger
 from dotenv import load_dotenv
 import logging
 
